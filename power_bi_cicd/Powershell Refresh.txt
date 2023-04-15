@@ -1,0 +1,33 @@
+#Reference Articel
+#https://insightsquest.com/2021/02/21/xmla-based-pbi-dataset-refresh-automation/
+
+#Get version of PowerShell, article states 7.1
+#$PSVersionTable
+
+
+#Install module for all users
+#check where file is installed to, need to move it to WindowsPowerShell folder in order to use cmdlets
+#Install-Module -Name SqlServer
+
+
+-----------------
+$User = ""
+$PWord = ConvertTo-SecureString -String "" -AsPlainText -Force
+$PSCred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
+$Workspace = ''
+$Database = ''
+
+#Import SQLServer is required for PowerShell 7.1 as of today(2/21/2021)
+Import-Module SqlServer -UseWindowsPowerShell
+
+#Process (refresh) the MonthList dimension table
+Invoke-ProcessTable -TableName 'MonthList' -RefreshType Full -Server $Workspace -DatabaseName $Database -Credential $PSCred
+
+
+#DAX/XMLA Query --not a fan of the DAX output
+Invoke-ASCmd -Server $Workspace -Database $Database -Credential $PSCred -Query "EVALUATE TOPN(1,SUMMARIZECOLUMNS('MonthList'[year_month]))"
+
+
+	
+	
